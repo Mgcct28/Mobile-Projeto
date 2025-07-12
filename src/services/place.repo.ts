@@ -37,7 +37,7 @@ class PlaceRepository {
     public async remove(place: Place){
         let list =  await this.getPlaces()
 
-        list.filter(p => !this.equals(p, place))
+        list = list.filter(p => !this.equals(p, place))
 
         this.persist(list)
 

@@ -70,14 +70,14 @@ export default function PlacePage(){
           />
 
           <View style={styles.button}>
-             <Button title='Salvar' onPress={save}/>
+             <Button title="Salvar" onPress={save}/>
           </View>
            
            { params.name && (
-          <View style={styles.button}>
-             <Button title='Deletar' onPress={remove} color={'red'}/>
-          </View>
-          )}
+               <View style={styles.button}>
+                   <Button title="Deletar" onPress={remove} color={'red'}/>
+               </View>
+            )}
     
        </View>
    )
