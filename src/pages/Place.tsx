@@ -1,22 +1,50 @@
-import { useRoute } from "@react-navigation/native";
+import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Button, StyleSheet, TextInput, Text, View, Alert } from "react-native";
 import { LatLng } from "react-native-maps";
+
+import { placeRepo } from "../services/place.repo";
+import { Place } from "../models/place";
+import React from "react";
 
 export default function PlacePage(){
 
     const route = useRoute()
-    const params = route.params as LatLng
+    const navigation = useNavigation<NavigationProp<any>>()
+    const params = route.params as Place
 
-    let name = ''
-    let description = '' 
+    const [name, setName] = React.useState(params.name? params.name : '')
+    const [description, setDescription] = React.useState(params.description? params.description: '')
+
+    React.useEffect(() => {
+        if (params.name) navigation.setOptions({title: 'Edição do Lugar'})
+    }, [])
+
+
+    function remove(){
+        const place = {
+            latitude: params.latitude,
+            longitude: params.longitude
+        }
+
+        placeRepo.remove(place) .then(() => {
+             navigation.goBack() })
+    }
 
     function save() {
          if (!name && name.trim() === ''){
             Alert.alert('O Nome é obrigatório')
          }
-
+         
         console.log('Nome:', name)
         console.log('Desc' , description)
+
+        placeRepo.save({
+            name, description,
+            latitude: params.latitude,
+            longitude: params.longitude
+        }).then(() =>{
+            navigation.goBack()
+        })
     }
 
    return(
@@ -27,14 +55,16 @@ export default function PlacePage(){
          <Text style={styles.label}> Informe os dados do novo local: </Text>
 
          <TextInput 
+              value={name}
               style={styles.inputName} 
-              placeholder="Nome" onChangeText={value => name = value}
+              placeholder="Nome" onChangeText={setName}
          />
 
          <TextInput 
+              value={description}
               style={styles.inputDescription} 
               placeholder="Descrição" 
-              onChangeText={value => description = value}
+              onChangeText={setDescription}
               numberOfLines={10} multiline
               
           />
@@ -42,6 +72,12 @@ export default function PlacePage(){
           <View style={styles.button}>
              <Button title='Salvar' onPress={save}/>
           </View>
+           
+           { params.name && (
+          <View style={styles.button}>
+             <Button title='Deletar' onPress={remove} color={'red'}/>
+          </View>
+          )}
     
        </View>
    )

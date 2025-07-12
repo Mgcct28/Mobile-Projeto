@@ -1,13 +1,18 @@
 import React from 'react';
 import * as Location from 'expo-location';
-import MapView, { LongPressEvent } from 'react-native-maps';
+import MapView, { LongPressEvent, Marker } from 'react-native-maps';
 import { StyleSheet, Button, Text, View } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+
+import { placeRepo } from '../services/place.repo';
+import { Place } from '../models/place';
 
 export default function MapPage() {
 
   const navigation = useNavigation<NavigationProp<any>>()
   const [location, setLocation] = React.useState<Location.LocationObject>();
+
+  const[places, setPlaces] = React.useState<Place[]>([])
   
   async function getGeoLocation() {
           
@@ -20,12 +25,19 @@ export default function MapPage() {
 
   React.useEffect(() => {
     getGeoLocation()
-
   }, [])
 
-  function goToPlace(event: LongPressEvent){
+  useFocusEffect(() =>{
+        placeRepo.getPlaces().then(list => setPlaces(list))
+  })
+
+  function goToNewPlace(event: LongPressEvent){
         navigation.navigate('Place', event.nativeEvent.coordinate)
   }
+
+  function goToEditPlace(place: Place){
+    navigation.navigate('Place', place)
+}
       
 
 
@@ -35,7 +47,7 @@ export default function MapPage() {
         <MapView
          style={styles.map}
          showsUserLocation={true}
-         onLongPress={goToPlace}
+         onLongPress={goToNewPlace}
          initialCamera={location && {
            center:{
               latitude: location.coords.latitude,
@@ -45,12 +57,22 @@ export default function MapPage() {
            pitch: 0,
            zoom: 10
 
-          } }
-         
-
-
+          } }      
       >
+        { places.map( place => (
+           <Marker
+           key={`${place.latitude}-${place.longitude}`}
+           title={place.name}
+           coordinate={{
 
+              latitude:place.latitude,
+              longitude:place.longitude
+           }}
+           onPress={() => goToEditPlace(place)}
+     />
+
+        )) }
+       
       </MapView>
     </View>
   );
